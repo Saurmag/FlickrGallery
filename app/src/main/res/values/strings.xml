@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Flickr Gallery</string>
+    <string name="content_Description_for_Image">Photo</string>
+</resources>

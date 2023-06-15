@@ -1,20 +1,16 @@
 package com.example.flickrgallery.ui
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.commit
-import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
-import com.example.flickrgallery.R
 import com.example.flickrgallery.databinding.FlickrGalleryFragmentBinding
 import com.example.flickrgallery.viewmodels.FlickrGalleryViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -46,24 +42,14 @@ class FlickrGalleryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val adapter = PhotoListAdapter() {
-            val photoUrl = it.urlLarge ?: it.urlMedium
-            setFragmentResult("requestKey", bundleOf("bundleKey" to photoUrl))
-
-            Log.d(TAG, "Url by photo is = $photoUrl")
-            val fragmentManager = parentFragmentManager
-            fragmentManager.commit {
-                replace(R.id.fragment_container, PhotoFragment())
-                setReorderingAllowed(true)
-                addToBackStack(null)
-            }
-        }
-
-        binding.photoGrid.adapter = adapter
-
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.items.collectLatest {
+                    val adapter = PhotoListAdapter() {
+                        val photoUrl = it.urlLarge ?: it.urlMedium
+                        showPhotoFragment(photoUrl!!)
+                    }
+                    binding.photoGrid.adapter = adapter
                     adapter.submitData(it)
                 }
             }
@@ -75,5 +61,8 @@ class FlickrGalleryFragment : Fragment() {
         _binding = null
     }
 
-
+    private fun showPhotoFragment(url: String) {
+        val navController = findNavController()
+        navController.navigate(FlickrGalleryFragmentDirections.showPhoto(url))
+    }
 }

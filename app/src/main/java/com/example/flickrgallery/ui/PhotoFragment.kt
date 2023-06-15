@@ -5,10 +5,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
+import androidx.lifecycle.lifecycleScope
 import coil.load
 import com.example.flickrgallery.databinding.PhotoFragmentBinding
+import kotlinx.coroutines.launch
 
 private const val TAG = "PHOTO_FRAGMENT"
 
@@ -19,17 +22,6 @@ class PhotoFragment: Fragment() {
         get() = checkNotNull(_binding) {
             "Cannot access because binding is null"
         }
-
-//    private var photoUrl: String? = null
-
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//
-//        setFragmentResultListener("requestKey") { requestKeyUrl, bundle ->
-//
-//            photoUrl = bundle.getString("bundleKey")
-//        }
-//    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,8 +37,21 @@ class PhotoFragment: Fragment() {
 
         setFragmentResultListener("requestKey") { requestKey, bundle ->
             val photoUrl = bundle.getString("bundleKey")
-            binding.image.load(photoUrl)
+            lifecycleScope.launch { updatePhoto(photoUrl!!) }
             Log.d(TAG, "Url by photo is = $photoUrl")
+        }
+    }
+
+    private suspend fun updatePhoto(photoUrl: String) {
+        binding.image.doOnLayout { measureView ->
+            lifecycleScope.launch {
+                val scaledBitmap = getScaledBitmap(
+                    photoUrl,
+                    measureView.width,
+                    requireContext()
+                )
+                binding.image.load(scaledBitmap)
+            }
         }
     }
 }

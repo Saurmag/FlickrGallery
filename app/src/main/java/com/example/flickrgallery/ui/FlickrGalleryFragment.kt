@@ -1,7 +1,6 @@
 package com.example.flickrgallery.ui
 
 import android.os.Bundle
-import android.provider.ContactsContract.Contacts.Photo
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -17,17 +16,9 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.flickrgallery.R
 import com.example.flickrgallery.databinding.FlickrGalleryFragmentBinding
-import com.example.flickrgallery.model.PhotoRepository
-import com.example.flickrgallery.model.api.FlickrApi
 import com.example.flickrgallery.viewmodels.FlickrGalleryViewModel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.last
-import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.launch
-import retrofit2.Retrofit
-import retrofit2.converter.scalars.ScalarsConverterFactory
-import retrofit2.create
 
 private const val TAG = "FlickrGalleryFragment"
 
@@ -56,7 +47,7 @@ class FlickrGalleryFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val adapter = PhotoListAdapter() {
-            val photoUrl = it.urlLarge
+            val photoUrl = it.urlLarge ?: it.urlMedium
             setFragmentResult("requestKey", bundleOf("bundleKey" to photoUrl))
 
             Log.d(TAG, "Url by photo is = $photoUrl")
